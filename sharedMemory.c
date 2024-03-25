@@ -50,3 +50,76 @@ int main() {
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+//PRODUCER 
+
+#include<sys/stat.h>
+#include<sys/shm.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/mman.h>
+int main()
+{
+    const char *name="0S";
+    int count,i;
+    char s =' ';
+    printf(" enter the number of strings");
+    scanf("%d",&count);
+    char words[count][10];
+    for(i=0; i<count; i++)
+    {
+        printf("enter the words\n");
+        scanf("%s",words[i]);
+        strncat(words[i],&s,1);
+    }
+    int id;
+    void *ptr;
+    id=shm_open(name,O_CREAT|O_RDWR,0666);
+    ftruncate(id,1024);
+    ptr=mmap(0,1024,PROT_WRITE,MAP_SHARED,id,0);
+    for(i=0; i<count; i++)
+    {
+        sprintf(ptr,"%s",words[i]);
+        int length=strlen(words[i]);
+        ptr+=(length);
+    }
+    return 0;
+}
+
+
+
+
+
+//CONSUMER
+
+#include<sys/stat.h>
+#include<sys/shm.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<unistd.h>
+#include<fcntl.h>
+#include<sys/mman.h>
+int main()
+{
+    const char *name="0S";
+    int id;
+    char*ptr;
+    id=shm_open(name,O_RDONLY,0666);
+    ftruncate(id,1024);
+    ptr=mmap(0,1024,PROT_READ,MAP_SHARED,id,0);
+    printf("data read from the memory is \n %s",ptr);
+    shm_unlink(name);
+    return 0;
+}
